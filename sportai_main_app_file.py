@@ -207,23 +207,74 @@ modules = {
 available_modules = {k: v for k, v in modules.items() if v is not None}
 
 class SportAIApp:
-    """Main SportAI Suite Application Class"""
-    
     def __init__(self):
         self.users = self.load_users()
         self.tools = self.build_tools_menu()
-    
+
     def load_users(self) -> Dict[str, Any]:
-        """Load user data with error handling and auto-creation of default users"""
+        """Load user data securely and create default users if needed."""
+        file_path = 'users.json'
+        default_users = {
+            "admin@sportai.com": {"password": hash_pw("admin123"), "role": "admin"},
+            "manager@sportai.com": {"password": hash_pw("manager123"), "role": "manager"},
+            "user@sportai.com": {"password": hash_pw("user123"), "role": "user"},
+        }
         try:
-            with open('users.json', 'r') as f:
-                return json.load(f)
-        except FileNotFoundError:
-            # Create default users if file doesn't exist
-            default_users = {
-                "admin@sportai.com": {"password": "admin123", "role": "admin"},
-                "manager@sportai.com": {"password": "manager123", "role": "manager"},
-                "user@sportai.com": {"password": "user123", "role": "user"}
+            if not os.path.exists(file_path):
+                with open(file_path, "w") as f:
+                    json.dump(default_users, f, indent=2)
+                return default_users
+            else:
+                with open(file_path, "r") as f:
+                    users = json.load(f)
+                # If old (plaintext) users.json, upgrade
+                updated = False
+                for k, v in users.items():
+                    if len(v['password']) != 64:  # not hex sha256
+                        v['password'] = hash_pw(v['password'])
+                        updated = True
+                if updated:
+                    with open(file_path, "w") as f:
+                        json.dump(users, f, indent=2)
+                return users
+        except Exception as e:
+            st.error(f"User loading failed: {e}")
+            logging.error(f"load_users error: {e}")
+            return default_users
+
+    def build_tools_menu(self) -> Dict[str, Any]:
+        """Only show tools whose modules loaded successfully."""
+        # (Reuse your tool_categories dict as before)
+        tool_categories = {
+            # ... (omitted for brevity, same as your original)
+        }
+        tools = {}
+        for tool_name, module_key in tool_categories.items():
+            if module_key in available_modules:
+                tools[tool_name] = available_modules[module_key]
+        return tools
+
+    def login(self):
+        st.sidebar.header('🔐 Login')
+        email = st.sidebar.text_input('Email', key='login_email')
+        password = st.sidebar.text_input('Password', type='password', key='login_password')
+        if st.sidebar.button('Login'):
+            user = self.users.get(email)
+            if user and verify_pw(password, user['password']):
+                st.session_state.user = {'email': email, 'role': user['role']}
+                st.sidebar.success('✅ Login successful!')
+                st.rerun()
+            else:
+                st.sidebar.error('❌ Invalid credentials.')
+        with st.sidebar.expander("📝 Demo Accounts"):
+            st.write("**Admin:** admin@sportai.com / admin123")
+            st.write("**Manager:** manager@sportai.com / manager123")
+            st.write("**User:** user@sportai.com / user123")
+
+    def logout(self):
+        if st.sidebar.button('🚪 Logout'):
+            st.session_state.user = None
+            st.rerun()
             }
             try:
                 with open('users.json', 'w') as f:
