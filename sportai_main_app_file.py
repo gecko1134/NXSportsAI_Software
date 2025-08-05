@@ -209,134 +209,15 @@ available_modules = {k: v for k, v in modules.items() if v is not None}
 class SportAIApp:
     """Main SportAI Suite Application Class"""
     
-    def __init__(self):
-        self.users = self.load_users()
-        self.tools = self.build_tools_menu()
-   def load_users(self) -> Dict[str, Any]:
-    """Load user data with error handling and auto-creation of default users"""
-    
-    # Debug: Show current working directory
-    current_dir = os.getcwd()
-    st.sidebar.write(f"DEBUG: Working directory: {current_dir}")
-    
-    # Default users
-    default_users = {
+   def __init__(self):
+    # Temporary hardcoded users for testing
+    self.users = {
         "admin@sportai.com": {"password": "admin123", "role": "admin"},
         "manager@sportai.com": {"password": "manager123", "role": "manager"},
         "user@sportai.com": {"password": "user123", "role": "user"}
     }
-    
-    try:
-        # Check if file exists
-        users_file_path = 'users.json'
-        if os.path.exists(users_file_path):
-            st.sidebar.write("DEBUG: users.json file found")
-            with open(users_file_path, 'r') as f:
-                users_data = json.load(f)
-                st.sidebar.write(f"DEBUG: Loaded {len(users_data)} users from file")
-                return users_data
-        else:
-            st.sidebar.write("DEBUG: users.json file not found, creating default users")
-            
-    except FileNotFoundError:
-        st.sidebar.write("DEBUG: FileNotFoundError - creating default users")
-    except json.JSONDecodeError as e:
-        st.sidebar.write(f"DEBUG: JSON decode error: {e}")
-        st.sidebar.write("DEBUG: Creating default users due to corrupted JSON")
-    except Exception as e:
-        st.sidebar.write(f"DEBUG: Unexpected error loading users: {e}")
-    
-    # Create default users file
-    try:
-        with open('users.json', 'w') as f:
-            json.dump(default_users, f, indent=2)
-        st.sidebar.write("DEBUG: Successfully created users.json file")
-        st.sidebar.write(f"DEBUG: Created {len(default_users)} default users")
-        return default_users
-    except Exception as e:
-        st.sidebar.write(f"DEBUG: Error creating users.json: {e}")
-        st.sidebar.write("DEBUG: Returning default users without file")
-        return default_users
-
-def login(self):
-    """Handle user login interface with enhanced debugging"""
-    st.sidebar.header('🔐 Login')
-    
-    # Debug: Show loaded users
-    st.sidebar.write(f"DEBUG: Available users: {list(self.users.keys())}")
-    
-    email = st.sidebar.text_input('Email', key='login_email')
-    password = st.sidebar.text_input('Password', type='password', key='login_password')
-    
-    if st.sidebar.button('Login'):
-        st.sidebar.write(f"DEBUG: Login attempt for email: '{email}'")
-        st.sidebar.write(f"DEBUG: Password length: {len(password)}")
-        
-        # Check if user exists
-        user = self.users.get(email)
-        if user:
-            st.sidebar.write(f"DEBUG: User found! Role: {user['role']}")
-            st.sidebar.write(f"DEBUG: Expected password: '{user['password']}'")
-            st.sidebar.write(f"DEBUG: Entered password: '{password}'")
-            st.sidebar.write(f"DEBUG: Passwords match: {user['password'] == password}")
-            
-            if user['password'] == password:
-                st.session_state.user = {'email': email, 'role': user['role']}
-                st.sidebar.success('✅ Login successful!')
-                st.rerun()
-            else:
-                st.sidebar.error('❌ Invalid password.')
-        else:
-            st.sidebar.error('❌ User not found.')
-            st.sidebar.write(f"DEBUG: Available emails: {list(self.users.keys())}")
-    
-    # Show available demo accounts
-    with st.sidebar.expander("📝 Demo Accounts"):
-        st.write("**Admin:** admin@sportai.com / admin123")
-        st.write("**Manager:** manager@sportai.com / manager123")
-        st.write("**User:** user@sportai.com / user123")
-        
-        # Add copy-paste helper
-        if st.button("🔄 Reset/Create users.json", key="reset_users"):
-            default_users = {
-                "admin@sportai.com": {"password": "admin123", "role": "admin"},
-                "manager@sportai.com": {"password": "manager123", "role": "manager"},
-                "user@sportai.com": {"password": "user123", "role": "user"}
-            }
-            try:
-                with open('users.json', 'w') as f:
-                    json.dump(default_users, f, indent=2)
-                st.sidebar.success("✅ users.json recreated!")
-                st.rerun()
-            except Exception as e:
-                st.sidebar.error(f"❌ Error creating file: {e}")
-
-# QUICK FIX: Manual users.json creation function
-def create_users_file_manually():
-    """Create users.json file manually if having issues"""
-    users_content = """{
-  "admin@sportai.com": {
-    "password": "admin123",
-    "role": "admin"
-  },
-  "manager@sportai.com": {
-    "password": "manager123",
-    "role": "manager"
-  },
-  "user@sportai.com": {
-    "password": "user123",
-    "role": "user"
-  }
-}"""
-    
-    try:
-        with open('users.json', 'w') as f:
-            f.write(users_content)
-        print("✅ users.json created successfully!")
-        return True
-    except Exception as e:
-        print(f"❌ Error creating users.json: {e}")
-        return False
+    self.tools = self.build_tools_menu()
+  
 
 # Run this if you want to manually create the file
 if __name__ == "__main__":
